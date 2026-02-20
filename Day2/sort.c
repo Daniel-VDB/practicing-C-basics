@@ -24,8 +24,11 @@ int main(void){
     for (int i = 0; i < length; i++){
             arr[i] = rand();
     }
+    printf("Unsorted: ");
     print_arr(arr, length);
     visual_mergesort(arr, length);
+
+    printf("Sorted: ");
     print_arr(arr, length);
 
     free(arr);
@@ -72,8 +75,8 @@ int *mergesort(int *arr, int len){
     if (len == 2){
         if (arr[0] > arr[1]) {
             swap(&arr[0],&arr[1]);
-            return arr;
         }
+        return arr;
     }
 
     // Split array into left and right
@@ -95,7 +98,7 @@ int *mergesort(int *arr, int len){
     for (int i = 0; i < left_len; i++){
         left[i] = arr[i];
     }
-    for (int j = left_len; j < right_len; j++){
+    for (int j = left_len; j < len; j++){
         right[j - left_len] = arr[j];
     }
 
@@ -123,7 +126,7 @@ int *mergesort(int *arr, int len){
             arr[m] = right[r];
             r++;
         }
-        else if (right[r] > left[l])
+        else
         {
             arr[m] = left[l];
             l++;
@@ -149,10 +152,8 @@ int *mergesort(int *arr, int len){
     return arr;
 }
 
-
 int *visual_mergesort(int *arr, int len){
     // Base cases
-
     printf("Partition: ");
     print_arr(arr, len);
 
@@ -162,8 +163,8 @@ int *visual_mergesort(int *arr, int len){
     if (len == 2){
         if (arr[0] > arr[1]) {
             swap(&arr[0],&arr[1]);
-            return arr;
         }
+        return arr;
     }
 
     // Split array into left and right
@@ -185,13 +186,13 @@ int *visual_mergesort(int *arr, int len){
     for (int i = 0; i < left_len; i++){
         left[i] = arr[i];
     }
-    for (int j = left_len; j < right_len; j++){
+    for (int j = left_len; j < len; j++){
         right[j - left_len] = arr[j];
     }
 
     // Recursively sort the left and right side
-    left = mergesort(left, left_len);
-    right = mergesort(right, right_len);
+    left = visual_mergesort(left, left_len);
+    right = visual_mergesort(right, right_len);
 
     // In case of failed allocation of left and right in recursive calls
     if (left == NULL){
@@ -213,7 +214,7 @@ int *visual_mergesort(int *arr, int len){
             arr[m] = right[r];
             r++;
         }
-        else if (right[r] > left[l])
+        else
         {
             arr[m] = left[l];
             l++;
@@ -232,9 +233,6 @@ int *visual_mergesort(int *arr, int len){
         r++;
         m++;
     }
-
-    printf("Merged partition: ");
-    print_arr(arr, len);
 
     // Free left and right branches, and return the merged array
     free(left);
@@ -245,11 +243,11 @@ int *visual_mergesort(int *arr, int len){
 // Print values of an array
 void print_arr(int *arr, int len){
     if (len < 1){
-        printf("Array = []");
+        printf("[");
         return;
     }
 
-    printf("Array = [");
+    printf("[");
     for (int i = 0; i < len - 1; i++){
         printf("%i, ", arr[i]);
     }
