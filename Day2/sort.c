@@ -6,6 +6,8 @@
 
 int *bubblesort(int *arr, int len);
 int *selectionsort(int *arr, int len);
+int *mergesort(int *arr, int len);
+int *visual_mergesort(int *arr, int len);
 void print_arr(int *arr, int len);
 void swap(int *a, int *b);
 
@@ -23,13 +25,15 @@ int main(void){
             arr[i] = rand();
     }
     print_arr(arr, length);
-    selectionsort(arr, length);
+    visual_mergesort(arr, length);
     print_arr(arr, length);
 
     free(arr);
     return 0;
 }
 
+
+// Pointer based bubble sort
 int *bubblesort(int *arr, int len){
     for (int i = 0; i < len; i++){
         bool sorted = true;
@@ -44,6 +48,7 @@ int *bubblesort(int *arr, int len){
     return arr;
 }
 
+// Pointer based selection sort
 int *selectionsort(int *arr, int len){
     for (int i = 0; i < len; i++){
         int min = i;
@@ -59,16 +64,201 @@ int *selectionsort(int *arr, int len){
     return arr;
 }
 
+int *mergesort(int *arr, int len){
+    // Base cases
+    if (len <= 1){
+        return arr;
+    }
+    if (len == 2){
+        if (arr[0] > arr[1]) {
+            swap(&arr[0],&arr[1]);
+            return arr;
+        }
+    }
+
+    // Split array into left and right
+    int left_len = len / 2; // Truncated (smaller)
+    int right_len = len - left_len;
+
+    int *left = malloc(sizeof(int) * left_len);
+    if (left == NULL){
+        printf("Failed memory allocation");
+        return NULL;
+    }
+    int *right = malloc(sizeof(int) * right_len);
+    if (right == NULL){
+        free(left);
+        printf("Failed memory allocation");
+        return NULL;
+    }
+
+    for (int i = 0; i < left_len; i++){
+        left[i] = arr[i];
+    }
+    for (int j = left_len; j < right_len; j++){
+        right[j - left_len] = arr[j];
+    }
+
+    // Recursively sort the left and right side
+    left = mergesort(left, left_len);
+    right = mergesort(right, right_len);
+
+    // In case of failed allocation of left and right in recursive calls
+    if (left == NULL){
+        if (right != NULL){free(right);}
+        return NULL;
+    }
+    if (right == NULL){
+        if (left != NULL){free(left);}
+        return NULL;
+    }
+
+    // Merge left and right
+    int l = 0; // Left cursor
+    int r = 0; // Right cursor
+    int m = 0; // Merged (arr) cursor
+
+    while (l < left_len && r < right_len && m < len){
+        if (left[l] > right[r]){
+            arr[m] = right[r];
+            r++;
+        }
+        else if (right[r] > left[l])
+        {
+            arr[m] = left[l];
+            l++;
+        }
+        m++;
+    }
+    while (l < left_len)
+    {
+        arr[m] = left[l];
+        l++;
+        m++;
+    }
+    while (r < right_len)
+    {
+        arr[m] = right[r];
+        r++;
+        m++;
+    }
+
+    // Free left and right branches, and return the merged array
+    free(left);
+    free(right);
+    return arr;
+}
+
+
+int *visual_mergesort(int *arr, int len){
+    // Base cases
+
+    printf("Partition: ");
+    print_arr(arr, len);
+
+    if (len <= 1){
+        return arr;
+    }
+    if (len == 2){
+        if (arr[0] > arr[1]) {
+            swap(&arr[0],&arr[1]);
+            return arr;
+        }
+    }
+
+    // Split array into left and right
+    int left_len = len / 2; // Truncated (smaller)
+    int right_len = len - left_len;
+
+    int *left = malloc(sizeof(int) * left_len);
+    if (left == NULL){
+        printf("Failed memory allocation");
+        return NULL;
+    }
+    int *right = malloc(sizeof(int) * right_len);
+    if (right == NULL){
+        free(left);
+        printf("Failed memory allocation");
+        return NULL;
+    }
+
+    for (int i = 0; i < left_len; i++){
+        left[i] = arr[i];
+    }
+    for (int j = left_len; j < right_len; j++){
+        right[j - left_len] = arr[j];
+    }
+
+    // Recursively sort the left and right side
+    left = mergesort(left, left_len);
+    right = mergesort(right, right_len);
+
+    // In case of failed allocation of left and right in recursive calls
+    if (left == NULL){
+        if (right != NULL){free(right);}
+        return NULL;
+    }
+    if (right == NULL){
+        if (left != NULL){free(left);}
+        return NULL;
+    }
+
+    // Merge left and right
+    int l = 0; // Left cursor
+    int r = 0; // Right cursor
+    int m = 0; // Merged (arr) cursor
+
+    while (l < left_len && r < right_len && m < len){
+        if (left[l] > right[r]){
+            arr[m] = right[r];
+            r++;
+        }
+        else if (right[r] > left[l])
+        {
+            arr[m] = left[l];
+            l++;
+        }
+        m++;
+    }
+    while (l < left_len)
+    {
+        arr[m] = left[l];
+        l++;
+        m++;
+    }
+    while (r < right_len)
+    {
+        arr[m] = right[r];
+        r++;
+        m++;
+    }
+
+    printf("Merged partition: ");
+    print_arr(arr, len);
+
+    // Free left and right branches, and return the merged array
+    free(left);
+    free(right);
+    return arr;
+}
+
+// Print values of an array
 void print_arr(int *arr, int len){
+    if (len < 1){
+        printf("Array = []");
+        return;
+    }
+
     printf("Array = [");
-    for (int i = 0; i < len; i++){
+    for (int i = 0; i < len - 1; i++){
         printf("%i, ", arr[i]);
     }
-    printf("]\n");
+    printf("%i]\n", arr[len - 1]);
     return;
 }
 
-void swap(int *a, int *b){ // Swaps values with pointers
+// Swaps values with pointers
+void swap(int *a, int *b){
     int tmp = *b;
     *b = *a;
     *a = tmp;
