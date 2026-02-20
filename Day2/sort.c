@@ -12,6 +12,7 @@ void print_arr(int *arr, int len);
 void swap(int *a, int *b);
 
 int main(void){
+    // Seeding random values
     srand(time(NULL));
 
     int length;
@@ -67,6 +68,7 @@ int *selectionsort(int *arr, int len){
     return arr;
 }
 
+// Merge sort using malloc
 int *mergesort(int *arr, int len){
     // Base cases
     if (len <= 1){
@@ -152,6 +154,7 @@ int *mergesort(int *arr, int len){
     return arr;
 }
 
+// Merge sort algorithm with print statements
 int *visual_mergesort(int *arr, int len){
     // Base cases
     printf("Partition: ");
