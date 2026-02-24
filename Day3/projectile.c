@@ -12,10 +12,14 @@
 // ALL VALUES MEASURED IN SI UNITS
 
 typedef struct {
-    float x_pos;
-    float y_pos;
-    float y_velo;
-    float x_velo;
+    float x;
+    float y;
+} vector2;
+
+typedef struct {
+    vector2 position;
+    vector2 velocity;
+    float mass;
     float size; // add force components
 } object2; 
 
@@ -30,6 +34,8 @@ void move(object2 **objects, int num, float deltatime);
 void detect_cols(object2 **objects, int num, worldBox2D world);
 float distance(object2 a, object2 b);
 void display(object2 **objects, int num, int second);
+float mag(vector2 vector);
+float theta(vector2 pos_a, vector2 pos_b);
 
 int main(void){
     clock_t start, end;
@@ -37,8 +43,8 @@ int main(void){
     float deltatime;
     float stopwatch = 0;
 
-    worldBox2D world = {BOUND,-BOUND,BOUND,-BOUND};
-    object2 ball = {0.0f,0.0f,0.0f,0.0f,1.0f};
+    worldBox2D world = {BOUND,-BOUND,-BOUND,BOUND};
+    object2 ball = {{0.0f, 0.0f}, {5.0f, 0.0f}, 5.0f, 1.0f};
 
     object2 *objects[num_objects] = {&ball}; // TO DO: let user choose the number of objects they waant
 
@@ -51,19 +57,19 @@ int main(void){
         
         // Gravity
         for (int i = 0; i < num_objects; i++){
-            objects[i]->y_velo -= g * deltatime;
+            objects[i]->velocity.y -= g * deltatime;
         }
 
-        // Determine positions
-        move(objects, num_objects, deltatime);
-
-        // Detect collisions between objects and boundaries and update velocities
+        // Detect collisions between objects and boundaries & update velocities
         detect_cols(objects, num_objects, world);
+
+        // Update positions using velocities
+        move(objects, num_objects, deltatime);
 
         if (stopwatch >= UPDATE_FREQUENCY){
             stopwatch = 0;
             seconds += UPDATE_FREQUENCY;
-            display(objects, 1, seconds);
+            display(objects, num_objects, seconds);
         }
 
         start = clock();
@@ -73,26 +79,24 @@ int main(void){
 
 void move(object2 **objects, int num, float deltatime){
     for (int i = 0; i < num; i++){
-        objects[i]->x_pos += objects[i]->x_velo * deltatime;
-        objects[i]->y_pos += objects[i]->y_velo * deltatime;
+        objects[i]->position.x += objects[i]->velocity.x * deltatime;
+        objects[i]->position.y += objects[i]->velocity.y * deltatime;
     }
 }
 
 void detect_cols(object2 **objects, int num, worldBox2D world){ 
     for (int i = 0; i < num; i++){
-        // To-Do: change this to be forces instead of directly updating velocity
-        // + also include elasticity of collisions in calculation
-        if (objects[i]->x_pos > world.right && objects[i]->x_velo > 0){
-            objects[i]->x_velo = objects[i]->x_velo * - 1;
+        if (objects[i]->position.x > world.right && objects[i]->velocity.x > 0){
+            objects[i]->velocity.x = objects[i]->velocity.x * - 1 * ELASTICITY;
         }
-        else if (objects[i]->x_pos < world.left && objects[i]->x_velo < 0){
-            objects[i]->x_velo = objects[i]->x_velo * - 1;
+        else if (objects[i]->position.x < world.left && objects[i]->velocity.x < 0){
+            objects[i]->velocity.x = objects[i]->velocity.x * -1 * ELASTICITY;
         }
-        if (objects[i]->y_pos > world.top && objects[i]->y_velo > 0){
-            objects[i]->y_velo = objects[i]->y_velo * - 1;
+        if (objects[i]->position.y > world.top && objects[i]->velocity.y > 0){
+            objects[i]->velocity.y = objects[i]->velocity.y * - 1 * ELASTICITY;
         }
-        else if (objects[i]->y_pos < world.bottom && objects[i]->y_velo < 0){
-            objects[i]->y_velo = objects[i]->y_velo * - 1;
+        else if (objects[i]->position.y < world.bottom && objects[i]->velocity.y < 0){
+            objects[i]->velocity.y = objects[i]->velocity.y * - 1 * ELASTICITY;
         }
         /*int j = 0;
         while (j != i && j < num){
@@ -106,7 +110,7 @@ void detect_cols(object2 **objects, int num, worldBox2D world){
 
 float distance(object2 a, object2 b){
     float d;
-    d = sqrt(((a.x_pos - b.x_pos) * (a.x_pos - b.x_pos)) + ((a.y_pos - b.y_pos) * (a.y_pos - b.y_pos)));
+    d = sqrt(((a.position.x - b.position.x) * (a.position.x - b.position.x)) + ((a.position.y - b.position.y) * (a.position.y - b.position.y)));
     d = d - (a.size + b.size); // Assuming circles;
     return d;
 }
@@ -116,8 +120,17 @@ void display(object2 **objects, int num, int second){
     printf("---- Objects at second: %.1f ----\n", second);
     for (int i = 0; i < num; i++){
         printf("--Object %i:--\n", i+1);
-        printf("Position\nX:%f\nY:%f\n", objects[i]->x_pos, objects[i]->y_pos);
-        printf("Velocity:\nX:%f\nY:%f\n", objects[i]->x_velo, objects[i]->y_velo);
+        printf("Position\nX:%f\nY:%f\n", objects[i]->position.x, objects[i]->position.y);
+        printf("Velocity:\nX:%f\nY:%f\n", objects[i]->velocity.x, objects[i]->velocity.y);
     }
     return;
+}
+
+float theta(vector2 pos_a, vector2 pos_b){ // Returns angle from a to b
+    // Not calculus, just differences
+    float dx = pos_b.x - pos_a.x;
+    float dy = pos_b.y - pos_a.y;
+
+    float theta = atan2f(dy,dx); // In rad
+    return theta;
 }
