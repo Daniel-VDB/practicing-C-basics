@@ -2,3 +2,6 @@
 *.exe
 
 media/
+
+test.c
+test.exe

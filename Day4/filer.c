@@ -4,8 +4,8 @@
 
 #define BYTE uint8_t
 
-char *cpname(char *source, char *destination);
 int cp(char *source, char *destination);
+int move(char *source, char * destination);
 
 
 int main(int argc, char *argv[]) {
@@ -14,46 +14,23 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     else if (argc >= 4 && strcmp(argv[1], "cp") == 0){
-        //char *newname = cpname(argv[2], argv[3]);
-        int result = cp(argv[2], argv[3]); // change to newname
-
-        /*if (newname != argv[3]){
-            free(newname);
-        }*/
+        int result = cp(argv[2], argv[3]);
         return result;
-
-    } else {
+    } else if (argc >= 4 && strcmp(argv[1], "mv") == 0){
+        int result = move(argv[2], argv[3]);
+        return result;
+    }
+    else {
         printf("Error, incorrect usage of filer\nCorrect usage: /filer 'command' 'source' 'destination'");
         return 1;
     }
+    return 0;
 }
-
-/*
-char *cpname(char *source, char *destination){
-    if (strcmp(source, destination) != 0){
-        return destination;
-    }
-    int length = strlen(destination);
-    char *suffix = "-copy";
-    char *newname = malloc((sizeof(char) * length) + sizeof("-copy"));
-
-    int final_dot = 0;
-    for (int i = 0; i < length; i++){
-        if (destination[i] == '.') final_dot = i;
-    }
-
-    for (int j = 0; j < final_dot; j++){
-        newname[j] = destination[j];
-    }
-
-    for (int k = 0; k < )
-
-
-}*/
 
 int cp(char *source, char *destination){
     FILE *src;
     FILE *dst;
+    
 
     src = fopen(source, "rb");
     if (!src){
@@ -67,9 +44,23 @@ int cp(char *source, char *destination){
         return 1;
     }
     BYTE buffer[4096];
-    while (fgets(buffer, 4096, src)){
-        fprintf(dst, buffer);
+    size_t bytesRead;
+
+    while ((bytesRead = fread(buffer, 1, sizeof(buffer), src) > 0)){
+        fwrite(buffer, 1 , bytesRead, dst);
     }
 
+    fclose(src);
+    fclose(dst);
+
+    return 0;
+}
+
+int move(char *source, char * destination){
+    if (rename(source, destination) == 0) {
+        printf("File moved successfully.\n");
+    } else {
+        perror("Error moving file"); 
+    }
     return 0;
 }
